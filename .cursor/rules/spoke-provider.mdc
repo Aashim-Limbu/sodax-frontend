@@ -1,0 +1,32 @@
+---
+description: cases when working with AleoSpokeProvider.
+alwaysApply: false
+---
+aleo-spoke-provider-source-of-truth = "provable-sdk (in-repo)"
+
+When working on **AleoSpokeProvider** or any Aleo-specific provider logic:
+
+Treat the **in-repo Provable Aleo SDK** as the single source of truth.
+
+Always reference the following packages for correctness:
+
+- @provablehq/sdk
+- @provablehq/aleo-types
+- packages/types/src/aleo
+The published packages:
+(@provablehq/sdk in the repo root,
+@provablehq/aleo-types inside /aleo-dev-toolkit)
+must be treated strictly as **compiled artifacts**, not design references.
+
+Ensure AleoSpokeProvider:
+
+- Aligns with the provider/connector abstractions already used by other chains
+- Fully supports all features and behaviors exposed by the Provable Aleo SDK
+- Uses Aleo SDK types directly without redefining, wrapping, or renaming them
+- Introduces no new abstractions, flows, or naming conventions 
+
+If behavior, APIs, or types differ:
+
+- Prefer the Provable Aleo SDK behavior
+- Update AleoSpokeProvider to match the SDK
+- Do **not** adapt or bend the SDK to fit existing provider assumptions

@@ -1,0 +1,86 @@
+{
+  "name": "@sodax/wallet-sdk-react",
+  "license": "MIT",
+  "version": "0.0.1-test",
+  "description": "Wallet SDK of Sodax",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/icon-project/sodax-frontend"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch ./src",
+    "prepublishOnly": "tsup",
+    "clean": "rm -rf dist && rm -rf node_modules && rm -rf .turbo",
+    "pretty": "biome format . --write",
+    "checkTs": "tsc --noEmit",
+    "knip": "knip",
+    "lint": "biome lint . --write"
+  },
+  "dependencies": {
+    "@coral-xyz/anchor": "0.30.1",
+    "@creit.tech/stellar-wallets-kit": "^1.7.5",
+    "@injectivelabs/networks": "catalog:",
+    "@injectivelabs/sdk-ts": "catalog:",
+    "@injectivelabs/ts-types": "catalog:",
+    "@injectivelabs/wallet-base": "catalog:",
+    "@injectivelabs/wallet-core": "catalog:",
+    "@injectivelabs/wallet-cosmos": "catalog:",
+    "@injectivelabs/wallet-evm": "catalog:",
+    "@injectivelabs/wallet-strategy": "catalog:",
+    "@mysten/dapp-kit": "catalog:",
+    "@mysten/sui": "catalog:",
+    "@provablehq/aleo-types": "catalog:",
+    "@provablehq/aleo-wallet-adaptor-core": "catalog:",
+    "@provablehq/aleo-wallet-adaptor-fox": "catalog:",
+    "@provablehq/aleo-wallet-adaptor-leo": "catalog:",
+    "@provablehq/aleo-wallet-adaptor-puzzle": "catalog:",
+    "@provablehq/aleo-wallet-adaptor-react": "catalog:",
+    "@provablehq/aleo-wallet-adaptor-shield": "catalog:",
+    "@provablehq/aleo-wallet-adaptor-soter": "catalog:",
+    "@provablehq/aleo-wallet-standard": "catalog:",
+    "@provablehq/sdk": "catalog:",
+    "@sodax/types": "workspace:*",
+    "@sodax/wallet-sdk-core": "workspace:*",
+    "@solana/spl-token": "catalog:",
+    "@solana/wallet-adapter-react": "0.15.35",
+    "@solana/wallet-adapter-wallets": "0.19.30",
+    "@solana/web3.js": "catalog:",
+    "@stellar/stellar-sdk": "catalog:",
+    "bs58": "6.0.0",
+    "icon-sdk-js": "catalog:",
+    "immer": "10.1.1",
+    "viem": "catalog:",
+    "wagmi": "catalog:",
+    "zustand": "4.5.2"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.8",
+    "knip": "5.30.5",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "^2.1.3"
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "5.x",
+    "react": ">=19"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

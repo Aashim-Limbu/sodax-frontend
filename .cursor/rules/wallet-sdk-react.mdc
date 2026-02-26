@@ -1,0 +1,42 @@
+---
+alwaysApply: true
+---
+
+aleo-wallet-react-source-of-truth = "in-repo"
+
+When working on any Aleo-related code inside wallet-sdk-react:
+
+Treat the in-repo aleo-dev-toolkit as the canonical source of truth
+
+Always reference the following in-repo paths for correctness:
+
+packages/aleo-wallet-adaptor/core
+
+packages/aleo-wallet-adaptor/react
+
+packages/aleo-wallet-adaptor/react-ui
+
+packages/aleo-wallet-adaptor/wallets
+
+packages/aleo-wallet-standard
+
+packages/aleo-types
+
+The published packages
+(@provablehq/aleo-wallet-adaptor-*, @provablehq/aleo-wallet-standard, @provablehq/aleo-types)
+must be treated as compiled artifacts, not design references
+
+Ensure the Aleo implementation in wallet-sdk-react:
+
+Matches existing adapter patterns used by other chains
+
+Supports all features exposed by the in-repo Aleo adapters
+
+Introduces no new abstractions, naming conventions, or flow changes
+unless they already exist in the in-repo implementation
+
+If behavior or APIs differ:
+
+Prefer the in-repo implementation
+
+Adjust wallet-sdk-react to align, not the other way around

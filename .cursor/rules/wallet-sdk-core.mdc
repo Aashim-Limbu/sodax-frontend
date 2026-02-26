@@ -1,0 +1,37 @@
+---
+description: cases when working with wallet-sdk-core.
+alwaysApply: false
+---
+aleo-wallet-core-source-of-truth = "in-repo"
+
+When working on any Aleo-related code inside wallet-sdk-core:
+
+Treat the in-repo Aleo SDK and type definitions as the canonical source of truth
+
+Always reference the following packages for correctness:
+
+- @provablehq/aleo-types
+- @provablehq/sdk
+
+The published packages
+(@provablehq/aleo-types: this is in /aleo-dev-toolkit folder,
+@provablehq/sdk in root folder with /sdk)
+must be treated as compiled artifacts, not design references
+
+Ensure the Aleo implementation in wallet-sdk-core:
+
+- Matches the core abstractions and patterns used by other chains
+- Fully supports all features and capabilities exposed by the Aleo SDK
+- Uses Aleo types directly without redefining, wrapping, or renaming them
+- Introduces no new abstractions, naming conventions, or flow changes
+  unless they already exist in the Aleo SDK or are required for
+  cross-chain consistency already present in wallet-sdk-core
+
+If behavior, APIs, or types differ:
+
+- Prefer the in-repo Aleo SDK implementation
+- Adjust wallet-sdk-core to align with Aleo SDK behavior,
+  not the other way around
+---
+alwaysApply: true
+---
