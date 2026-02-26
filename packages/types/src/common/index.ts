@@ -85,7 +85,6 @@ export type BaseSpokeChainInfo<T extends ChainType> = {
   name: string;
   id: GetSpokeChainIdType<T>;
   chainId: string | number;
-
   type: T;
 };
 

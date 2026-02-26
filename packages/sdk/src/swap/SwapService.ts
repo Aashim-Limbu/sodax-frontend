@@ -74,8 +74,6 @@ import {
 import { StellarSpokeService } from '../shared/services/spoke/StellarSpokeService.js';
 import type { ConfigService } from '../shared/config/ConfigService.js';
 import { SonicSpokeProvider } from '../shared/entities/Providers.js';
-
-//! Check: Swap INtent
 export type CreateIntentParams = {
   inputToken: string; // The address of the input token on spoke chain
   outputToken: string; // The address of the output token on spoke chain

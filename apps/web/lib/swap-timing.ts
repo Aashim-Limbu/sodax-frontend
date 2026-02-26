@@ -1,6 +1,6 @@
-import { ALEO_TESTNET_CHAIN_ID, ETHEREUM_MAINNET_CHAIN_ID } from '@sodax/types';
+import { ALEO_MAINNET_CHAIN_ID, ETHEREUM_MAINNET_CHAIN_ID } from '@sodax/types';
 
-export const SLOW_CHAINS = [ETHEREUM_MAINNET_CHAIN_ID, ALEO_TESTNET_CHAIN_ID];
+export const SLOW_CHAINS = [ETHEREUM_MAINNET_CHAIN_ID, ALEO_MAINNET_CHAIN_ID];
 
 /**
  * Determines swap timing information based on source and destination chains.

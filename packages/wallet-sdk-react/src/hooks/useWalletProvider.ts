@@ -155,7 +155,7 @@ export function useWalletProvider(
         const adapter = (connector as AleoXConnector).adapter;
         return new AleoWalletProvider({
           type: 'browserExtension',
-          rpcUrl: spokeChainConfig['aleo-testnet']?.rpcUrl ?? 'https://api.explorer.provable.com/v2',
+          rpcUrl: spokeChainConfig['aleo']?.rpcUrl ?? 'https://api.explorer.provable.com/v2',
           provableAdapter: adapter as BaseAleoWalletAdapter,
           network: 'testnet',
         });

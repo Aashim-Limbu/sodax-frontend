@@ -150,9 +150,6 @@ export function encodeAddress(spokeChainId: SpokeChainId, address: string): Hex 
     case 'aleo':
       return toHex(Buffer.from(address, 'utf-8'));
 
-    case 'aleo-testnet':
-      return toHex(Buffer.from(address, 'utf-8'));
-
     default:
       return address as Hex;
   }

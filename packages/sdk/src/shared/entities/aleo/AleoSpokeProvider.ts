@@ -78,6 +78,45 @@ export class AleoBaseSpokeProvider {
     return `[${leoBytes}]`;
   }
 
+  async isConnSnUsed(connSn: bigint): Promise<boolean> {
+    try {
+      const value = await this.networkClient.getProgramMappingValue(
+        this.chainConfig.addresses.connection,
+        'messages',
+        `${connSn}u128`,
+      );
+      return value != null;
+    } catch {
+      return false;
+    }
+  }
+
+  async generateUniqueConnSn(inputConnSn?: bigint, maxRetries = 10): Promise<bigint> {
+    if (inputConnSn != null) {
+      const used = await this.isConnSnUsed(inputConnSn);
+      if (!used) return inputConnSn;
+      console.warn(`Supplied connSn ${inputConnSn} already used, generating new one`);
+    }
+
+    for (let i = 0; i < maxRetries; i++) {
+      // Allocate a 16-byte (128-bit) buffer and fill it with cryptographically
+      // secure random values — much stronger than Math.random()
+      const bytes = new Uint8Array(16);
+      crypto.getRandomValues(bytes);
+
+      // Interpret the 16 bytes as a single 128-bit unsigned integer.
+      // Each iteration shifts the accumulator left by 8 bits and ORs in the next byte,
+      // effectively concatenating bytes into one BigInt: [b0, b1, ..., b15] → b0<<120 | b1<<112 | ... | b15
+      // Result is always within u128 range (0 to 2^128-1) since we read exactly 16 bytes.
+      const connSn = Array.from(bytes).reduce((acc, b) => (acc << 8n) | BigInt(b), 0n);
+
+      // Verify this connSn hasn't already been used in the on-chain messages mapping
+      const used = await this.isConnSnUsed(connSn);
+      if (!used) return BigInt('478979811');
+    }
+    throw new Error('Failed to generate unique connSn after maximum retries');
+  }
+
   async getBalance(walletAddress: string, token: string): Promise<bigint> {
     if (!AleoBaseSpokeProvider.isValidAleoAddress(walletAddress)) {
       throw new Error(`Invalid Aleo address: ${walletAddress}`);

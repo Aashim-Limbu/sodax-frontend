@@ -16,11 +16,15 @@ import {
   encodeAddress,
 } from '@sodax/sdk';
 import { AleoWalletProvider } from '@sodax/wallet-sdk-core';
-import { ALEO_TESTNET_CHAIN_ID, ALEO_MAINNET_CHAIN_ID, SONIC_MAINNET_CHAIN_ID, type HubChainId } from '@sodax/types';
+import {
+  ALEO_MAINNET_CHAIN_ID,
+  SONIC_MAINNET_CHAIN_ID,
+  type SonicSpokeChainConfig,
+  type HubChainId,
+} from '@sodax/types';
 import { solverConfig } from './config.js';
 
-const IS_TESTNET = process.env.IS_TESTNET === 'true';
-const ALEO_CHAIN_ID = IS_TESTNET ? ALEO_TESTNET_CHAIN_ID : ALEO_MAINNET_CHAIN_ID;
+const ALEO_CHAIN_ID = ALEO_MAINNET_CHAIN_ID;
 const aleoChainConfig = spokeChainConfig[ALEO_CHAIN_ID] as AleoSpokeChainConfig;
 const ALEO_RPC_URL = process.env.ALEO_RPC_URL || aleoChainConfig.rpcUrl;
 const ALEO_PRIVATE_KEY = process.env.ALEO_PRIVATE_KEY;
@@ -31,6 +35,8 @@ const PROVABLE_DELEGATE_URL = process.env.PROVABLE_DELEGATE_URL;
 const HUB_RPC_URL = process.env.HUB_RPC_URL || 'https://rpc.soniclabs.com';
 const API_URL = process.env.API_URL || 'http://localhost:4566/';
 
+const destinationChainConfig = spokeChainConfig[SONIC_MAINNET_CHAIN_ID] as SonicSpokeChainConfig;
+
 if (!ALEO_PRIVATE_KEY) throw new Error('ALEO_PRIVATE_KEY is required');
 if (!ALEO_PRIVATE_KEY.startsWith('APrivateKey1')) throw new Error('Invalid ALEO_PRIVATE_KEY');
 
@@ -38,7 +44,7 @@ const aleoWalletProvider = new AleoWalletProvider({
   type: 'privateKey',
   rpcUrl: ALEO_RPC_URL,
   privateKey: ALEO_PRIVATE_KEY,
-  network: IS_TESTNET ? 'testnet' : 'mainnet',
+  network: 'testnet',
   ...(PROVABLE_API_KEY && PROVABLE_CONSUMER_ID
     ? {
         delegate: {
@@ -132,7 +138,7 @@ async function depositTo(token: string, amount: number, recipient: Address) {
 
 async function withdrawAsset(token: string, amount: number, recipient: string) {
   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
-  const walletAddressBytes = encodeAddress(ALEO_TESTNET_CHAIN_ID, walletAddress);
+  const walletAddressBytes = encodeAddress(aleoSpokeProvider.chainConfig.chain.id, walletAddress);
   const hubWallet = await EvmWalletAbstraction.getUserHubWalletAddress(
     aleoSpokeProvider.chainConfig.chain.id,
     walletAddressBytes,
@@ -142,7 +148,7 @@ async function withdrawAsset(token: string, amount: number, recipient: string) {
   const data = EvmAssetManagerService.withdrawAssetData(
     {
       token,
-      to: encodeAddress(ALEO_TESTNET_CHAIN_ID, recipient),
+      to: encodeAddress(aleoSpokeProvider.chainConfig.chain.id, recipient),
       amount: BigInt(amount),
     },
     hubProvider,
@@ -156,7 +162,7 @@ async function withdrawAsset(token: string, amount: number, recipient: string) {
 
 async function supply(token: string, amount: number) {
   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
-  const walletAddressBytes = encodeAddress(ALEO_TESTNET_CHAIN_ID, walletAddress);
+  const walletAddressBytes = encodeAddress(aleoSpokeProvider.chainConfig.chain.id, walletAddress);
   const hubWallet = await EvmWalletAbstraction.getUserHubWalletAddress(
     aleoSpokeProvider.chainConfig.chain.id,
     walletAddressBytes,
@@ -186,7 +192,7 @@ async function supply(token: string, amount: number) {
 
 async function borrow(token: string, amount: number) {
   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
-  const walletAddressBytes = encodeAddress(ALEO_TESTNET_CHAIN_ID, walletAddress);
+  const walletAddressBytes = encodeAddress(aleoSpokeProvider.chainConfig.chain.id, walletAddress);
   const hubWallet = await EvmWalletAbstraction.getUserHubWalletAddress(
     aleoSpokeProvider.chainConfig.chain.id,
     walletAddressBytes,
@@ -208,7 +214,7 @@ async function borrow(token: string, amount: number) {
 
 async function withdraw(token: string, amount: number) {
   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
-  const walletAddressBytes = encodeAddress(ALEO_TESTNET_CHAIN_ID, walletAddress);
+  const walletAddressBytes = encodeAddress(aleoSpokeProvider.chainConfig.chain.id, walletAddress);
   const hubWallet = await EvmWalletAbstraction.getUserHubWalletAddress(
     aleoSpokeProvider.chainConfig.chain.id,
     walletAddressBytes,
@@ -230,7 +236,7 @@ async function withdraw(token: string, amount: number) {
 
 async function repay(token: string, amount: number) {
   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
-  const walletAddressBytes = encodeAddress(ALEO_TESTNET_CHAIN_ID, walletAddress);
+  const walletAddressBytes = encodeAddress(aleoSpokeProvider.chainConfig.chain.id, walletAddress);
   const hubWallet = await EvmWalletAbstraction.getUserHubWalletAddress(
     aleoSpokeProvider.chainConfig.chain.id,
     walletAddressBytes,
@@ -260,8 +266,9 @@ async function repay(token: string, amount: number) {
 
 async function createIntent(amount: number, inputToken: string, outputToken: string) {
   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
+  const userWallet = await getUserWallet();
 
-  const txId = await sodax.swaps.createIntent({
+  const result = await sodax.swaps.createIntent({
     intentParams: {
       inputToken,
       outputToken,
@@ -271,6 +278,7 @@ async function createIntent(amount: number, inputToken: string, outputToken: str
       allowPartialFill: false,
       srcChain: aleoSpokeProvider.chainConfig.chain.id,
       dstChain: aleoSpokeProvider.chainConfig.chain.id,
+      //   dstChain: destinationChainConfig.chain.id,
       srcAddress: walletAddress,
       dstAddress: walletAddress,
       solver: '0x0000000000000000000000000000000000000000',
@@ -279,8 +287,53 @@ async function createIntent(amount: number, inputToken: string, outputToken: str
     spokeProvider: aleoSpokeProvider,
   });
 
-  console.log('[createIntent] txId', txId);
+  if (!result.ok) {
+    console.error('[createIntent] Failed:', result.error);
+    throw new Error(`createIntent failed: ${result.error.code}`);
+  }
+
+  const [txId, intent, data] = result.value;
+  console.log('[createIntent] txId:', txId);
+  console.log('[createIntent] intentId:', intent.intentId);
+
+  const res = await submitData(txId as string, userWallet, data);
+  console.log('[createIntent] submitData response:', res);
 }
+
+// async function swap(amount: number, inputToken: string, outputToken: string) {
+//   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
+//   const userWallet = await getUserWallet();
+
+//   const result = await sodax.swaps.createIntent({
+//     intentParams: {
+//       inputToken,
+//       outputToken,
+//       inputAmount: BigInt(amount),
+//       minOutputAmount: 0n,
+//       deadline: 0n,
+//       allowPartialFill: false,
+//       srcChain: aleoSpokeProvider.chainConfig.chain.id,
+//       dstChain: aleoSpokeProvider.chainConfig.chain.id,
+//       srcAddress: walletAddress,
+//       dstAddress: walletAddress,
+//       solver: '0x0000000000000000000000000000000000000000',
+//       data: '0x',
+//     },
+//     spokeProvider: aleoSpokeProvider,
+//   });
+
+//   if (!result.ok) {
+//     console.error('[swap] Failed:', result.error);
+//     throw new Error(`Swap failed: ${result.error.code}`);
+//   }
+
+//   const [txId, intent, data] = result.value;
+//   console.log('[swap] txId:', txId);
+//   console.log('[swap] intentId:', intent.intentId);
+
+//   const res = await submitData(txId as string, userWallet, data);
+//   console.log('[swap] submitData response:', res);
+// }
 
 async function main() {
   const functionName = process.argv[2];
@@ -326,7 +379,7 @@ async function main() {
         '  borrow <token> <amount>                          - Borrow from lending pool\n' +
         '  withdraw <token> <amount>                        - Withdraw from lending pool\n' +
         '  repay <token> <amount>                           - Repay lending pool debt\n' +
-        '  createIntent <amount> <inputToken> <outputToken> - Create swap intent',
+        '  createIntent <amount> <inputToken> <outputToken> - Create swap intent\n',
     );
   }
 }
@@ -335,3 +388,12 @@ main().catch(error => {
   console.error('Error:', error.message);
   process.exit(1);
 });
+
+async function getConnSn() {
+  const data = await aleoSpokeProvider.networkClient.getProgramMappingValue(
+    'connection_v4.aleo',
+    'messages',
+    '68330465465379u128',
+  );
+  console.log(data);
+}

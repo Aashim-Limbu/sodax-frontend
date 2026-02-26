@@ -150,7 +150,8 @@ export class AleoSpokeService {
     raw?: R,
   ): Promise<TxReturnType<S, R>> {
     const relayId = getIntentRelayChainId(hubProvider.chainConfig.chain.id);
-    const connSn = BigInt(AleoSpokeService.generateConnSn());
+    const baseProvider = new AleoBaseSpokeProvider(spokeProvider.chainConfig);
+    const connSn = await baseProvider.generateUniqueConnSn();
     return AleoSpokeService.call(BigInt(relayId), from, keccak256(payload), connSn, spokeProvider, raw);
   }
 
@@ -161,15 +162,13 @@ export class AleoSpokeService {
    * fee_amount, hub_chain_id, and hub_address must all be passed as inputs.
    */
   private static async transfer<S extends AleoSpokeProviderType, R extends boolean = false>(
-    //! Check: ConnSN in the sdk AleoSpokeServiceT.transfer or with two types with connSn + transfer or only transfer
-    //^ add a check if the connSn has already been consumed.
     { token, recipient, amount, data, connSn: inputConnSn, feeAmount }: AleoTransferToHubParams,
     spokeProvider: S,
     hubProvider: EvmHubProvider,
     raw?: R,
   ): Promise<TxReturnType<S, R>> {
-    const connSn = inputConnSn ?? BigInt(AleoSpokeService.generateConnSn());
     const baseProvider = new AleoBaseSpokeProvider(spokeProvider.chainConfig);
+    const connSn = await baseProvider.generateUniqueConnSn(inputConnSn);
 
     const hubChainId = BigInt(hubProvider.chainConfig.chain.chainId);
 

@@ -1,5 +1,5 @@
 import {
-  ALEO_TESTNET_CHAIN_ID,
+  ALEO_MAINNET_CHAIN_ID,
   ARBITRUM_MAINNET_CHAIN_ID,
   AVALANCHE_MAINNET_CHAIN_ID,
   BASE_MAINNET_CHAIN_ID,
@@ -74,7 +74,7 @@ export const availableChains: ChainUI[] = [
     icon: '/chain/lightlink.png',
   },
   { id: HYPEREVM_MAINNET_CHAIN_ID, name: 'Hyper', icon: '/chain/hyper.png' },
-  { id: ALEO_TESTNET_CHAIN_ID, name: 'ALEO', icon: '/chain/aleo.png' },
+  { id: ALEO_MAINNET_CHAIN_ID, name: 'ALEO', icon: '/chain/aleo.png' },
 ];
 
 /**
