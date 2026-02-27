@@ -195,7 +195,7 @@ export const ChainIdToIntentRelayChainId = {
   [HYPEREVM_MAINNET_CHAIN_ID]: 26745n,
   [LIGHTLINK_MAINNET_CHAIN_ID]: 27756n,
   [ETHEREUM_MAINNET_CHAIN_ID]: 2n,
-  [ALEO_MAINNET_CHAIN_ID]: 6694886634401n,
+  [ALEO_MAINNET_CHAIN_ID]: 6694886634403n,
 } as const;
 
 export const getIntentRelayChainId = (chainId: ChainId): IntentRelayChainId => ChainIdToIntentRelayChainId[chainId];
@@ -2238,7 +2238,7 @@ export const hubAssets: Record<SpokeChainId, Record<string, HubAsset>> = {
       decimal: 6,
       symbol: 'testToken',
       name: 'testToken',
-      vault: "0x0000000000000000000000000000000000000000",
+      vault: '0x0000000000000000000000000000000000000000',
     },
   },
 } as const;

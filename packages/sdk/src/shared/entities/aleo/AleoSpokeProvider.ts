@@ -112,7 +112,7 @@ export class AleoBaseSpokeProvider {
 
       // Verify this connSn hasn't already been used in the on-chain messages mapping
       const used = await this.isConnSnUsed(connSn);
-      if (!used) return BigInt('478979811');
+      if (!used) return connSn;
     }
     throw new Error('Failed to generate unique connSn after maximum retries');
   }

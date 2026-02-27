@@ -14,6 +14,7 @@ import {
   getHubChainConfig,
   getMoneyMarketConfig,
   encodeAddress,
+  SolverConfigParams,
 } from '@sodax/sdk';
 import { AleoWalletProvider } from '@sodax/wallet-sdk-core';
 import {
@@ -22,7 +23,6 @@ import {
   type SonicSpokeChainConfig,
   type HubChainId,
 } from '@sodax/types';
-import { solverConfig } from './config.js';
 
 const ALEO_CHAIN_ID = ALEO_MAINNET_CHAIN_ID;
 const aleoChainConfig = spokeChainConfig[ALEO_CHAIN_ID] as AleoSpokeChainConfig;
@@ -34,11 +34,18 @@ const PROVABLE_CONSUMER_ID = process.env.PROVABLE_CONSUMER_ID;
 const PROVABLE_DELEGATE_URL = process.env.PROVABLE_DELEGATE_URL;
 const HUB_RPC_URL = process.env.HUB_RPC_URL || 'https://rpc.soniclabs.com';
 const API_URL = process.env.API_URL || 'http://localhost:4566/';
-
+const RELAYER_API_ENDPOINT = 'https://jozvz6ftrl25jf4bzva125vz94yld26g.lambda-url.us-east-1.localstack.debendra.me';
 const destinationChainConfig = spokeChainConfig[SONIC_MAINNET_CHAIN_ID] as SonicSpokeChainConfig;
 
 if (!ALEO_PRIVATE_KEY) throw new Error('ALEO_PRIVATE_KEY is required');
 if (!ALEO_PRIVATE_KEY.startsWith('APrivateKey1')) throw new Error('Invalid ALEO_PRIVATE_KEY');
+
+
+const solverConfig = {
+  intentsContract: '0x6382D6ccD780758C5e8A6123c33ee8F4472F96ef',
+  solverApiEndpoint: 'https://sodax-solver-staging.iconblockchain.xyz',
+  partnerFee: undefined,
+} satisfies SolverConfigParams;
 
 const aleoWalletProvider = new AleoWalletProvider({
   type: 'privateKey',
@@ -63,10 +70,12 @@ const hubConfig = {
 
 const moneyMarketConfig = getMoneyMarketConfig(HUB_CHAIN_ID);
 
+
 const sodax = new Sodax({
   swaps: solverConfig,
   moneyMarket: moneyMarketConfig,
   hubProviderConfig: hubConfig,
+  relayerApiEndpoint: RELAYER_API_ENDPOINT,
 } satisfies SodaxConfig);
 
 const hubProvider = new EvmHubProvider({
@@ -278,7 +287,7 @@ async function createIntent(amount: number, inputToken: string, outputToken: str
       allowPartialFill: false,
       srcChain: aleoSpokeProvider.chainConfig.chain.id,
       dstChain: aleoSpokeProvider.chainConfig.chain.id,
-      //   dstChain: destinationChainConfig.chain.id,
+      //dstChain: destinationChainConfig.chain.id,
       srcAddress: walletAddress,
       dstAddress: walletAddress,
       solver: '0x0000000000000000000000000000000000000000',
@@ -300,40 +309,38 @@ async function createIntent(amount: number, inputToken: string, outputToken: str
   console.log('[createIntent] submitData response:', res);
 }
 
-// async function swap(amount: number, inputToken: string, outputToken: string) {
-//   const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
-//   const userWallet = await getUserWallet();
+async function swap(amount: number, inputToken: string, outputToken: string, dstChain = aleoSpokeProvider.chainConfig.chain.id) {
+  const walletAddress = await aleoSpokeProvider.walletProvider.getWalletAddress();
 
-//   const result = await sodax.swaps.createIntent({
-//     intentParams: {
-//       inputToken,
-//       outputToken,
-//       inputAmount: BigInt(amount),
-//       minOutputAmount: 0n,
-//       deadline: 0n,
-//       allowPartialFill: false,
-//       srcChain: aleoSpokeProvider.chainConfig.chain.id,
-//       dstChain: aleoSpokeProvider.chainConfig.chain.id,
-//       srcAddress: walletAddress,
-//       dstAddress: walletAddress,
-//       solver: '0x0000000000000000000000000000000000000000',
-//       data: '0x',
-//     },
-//     spokeProvider: aleoSpokeProvider,
-//   });
+  const result = await sodax.swaps.swap({
+    intentParams: {
+      inputToken,
+      outputToken,
+      inputAmount: BigInt(amount),
+      minOutputAmount: 0n,
+      deadline: 0n,
+      allowPartialFill: false,
+      srcChain: aleoSpokeProvider.chainConfig.chain.id,
+      dstChain,
+      srcAddress: walletAddress,
+      dstAddress: walletAddress,
+      solver: '0x0000000000000000000000000000000000000000',
+      data: '0x',
+    },
+    spokeProvider: aleoSpokeProvider,
+  });
 
-//   if (!result.ok) {
-//     console.error('[swap] Failed:', result.error);
-//     throw new Error(`Swap failed: ${result.error.code}`);
-//   }
+  if (!result.ok) {
+    console.error('[swap] Failed:', result.error);
+    throw new Error(`swap failed: ${result.error.code}`);
+  }
 
-//   const [txId, intent, data] = result.value;
-//   console.log('[swap] txId:', txId);
-//   console.log('[swap] intentId:', intent.intentId);
-
-//   const res = await submitData(txId as string, userWallet, data);
-//   console.log('[swap] submitData response:', res);
-// }
+  const [executionResponse, intent, deliveryInfo] = result.value;
+  console.log('[swap] intentId:', intent.intentId);
+  console.log('[swap] srcTxHash:', deliveryInfo.srcTxHash);
+  console.log('[swap] dstTxHash:', deliveryInfo.dstTxHash);
+  console.log('[swap] executionResponse:', executionResponse);
+}
 
 async function main() {
   const functionName = process.argv[2];
@@ -369,6 +376,12 @@ async function main() {
     const inputToken = process.argv[4];
     const outputToken = process.argv[5];
     await createIntent(amount, inputToken, outputToken);
+  } else if (functionName === 'swap') {
+    const amount = Number(process.argv[3]);
+    const inputToken = process.argv[4];
+    const outputToken = process.argv[5];
+    const dstChain = process.argv[6] as typeof aleoSpokeProvider.chainConfig.chain.id | undefined;
+    await swap(amount, inputToken, outputToken, dstChain);
   } else {
     console.log(
       'Usage: pnpm aleo <function> [args...]\n' +
@@ -379,7 +392,8 @@ async function main() {
         '  borrow <token> <amount>                          - Borrow from lending pool\n' +
         '  withdraw <token> <amount>                        - Withdraw from lending pool\n' +
         '  repay <token> <amount>                           - Repay lending pool debt\n' +
-        '  createIntent <amount> <inputToken> <outputToken> - Create swap intent\n',
+        '  createIntent <amount> <inputToken> <outputToken>           - Create swap intent (step 1 only)\n' +
+        '  swap <amount> <inputToken> <outputToken> [dstChain]         - Full swap (intent + relay + execute)\n',
     );
   }
 }

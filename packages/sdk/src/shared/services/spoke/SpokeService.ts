@@ -9,7 +9,7 @@ import type {
   SpokeProviderType,
   StellarSpokeProvider,
   SuiSpokeProvider,
-//   AleoSpokeProvider,
+  //   AleoSpokeProvider,
 } from '../../entities/index.js';
 import type {
   GetEstimateGasReturnType,
@@ -49,6 +49,7 @@ import {
   isEvmSpokeProviderType,
   isSonicSpokeProviderType,
   isAleoSpokeProviderType,
+  isAleoSpokeProvider,
 } from '../../guards.js';
 import * as rlp from 'rlp';
 import { encodeFunctionData } from 'viem';
@@ -574,6 +575,9 @@ export class SpokeService {
     }
     if (isStellarSpokeProvider(spokeProvider)) {
       return StellarSpokeService.waitForTransaction(spokeProvider, txHash);
+    }
+    if (isAleoSpokeProvider(spokeProvider)) {
+      return AleoSpokeService.waitForConfirmation(spokeProvider, txHash);
     }
 
     // only stellar and solana need to be verified

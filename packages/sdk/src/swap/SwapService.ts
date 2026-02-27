@@ -66,6 +66,7 @@ import {
   type Hash,
   type HttpUrl,
   SOLANA_MAINNET_CHAIN_ID,
+  ALEO_MAINNET_CHAIN_ID,
   type IntentRelayChainId,
   getIntentRelayChainId,
   getSolverConfig,
@@ -592,7 +593,7 @@ export class SwapService {
       if (spokeProvider.chainConfig.chain.id !== this.hubProvider.chainConfig.chain.id) {
         const intentRelayChainId = getIntentRelayChainId(params.srcChain).toString();
         const submitPayload: IntentRelayRequest<'submit'> =
-          params.srcChain === SOLANA_MAINNET_CHAIN_ID && data
+          (params.srcChain === SOLANA_MAINNET_CHAIN_ID || params.srcChain === ALEO_MAINNET_CHAIN_ID) && data
             ? {
                 action: 'submit',
                 params: {
