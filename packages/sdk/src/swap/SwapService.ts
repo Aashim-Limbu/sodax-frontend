@@ -484,6 +484,9 @@ export class SwapService {
    *   // handle error
    * }
    */
+
+  //! 1. create Intent Manually . Get type from the sdk types.
+
   public async swap<S extends SpokeProvider>({
     intentParams: params,
     spokeProvider,
@@ -996,6 +999,8 @@ export class SwapService {
           this.configService,
           fee,
         );
+        console.log('Creator Hub Wallet Address', creatorHubWalletAddress, '\n');
+        console.log('✅✅✅Data is here: ', data);
 
         const txResult = (await SpokeService.deposit(
           {

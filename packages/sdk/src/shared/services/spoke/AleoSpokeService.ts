@@ -72,6 +72,8 @@ export class AleoSpokeService {
         encodeAddress(spokeProvider.chainConfig.chain.id, params.from),
         hubProvider,
       ));
+    console.log('===== Params: ======', params);
+    console.log('**** USER WALLET ******', userWallet);
     return AleoSpokeService.transfer(
       {
         token: BigInt(params.token),

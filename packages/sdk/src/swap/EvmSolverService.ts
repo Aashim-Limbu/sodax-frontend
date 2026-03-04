@@ -87,7 +87,6 @@ export class EvmSolverService {
       creator: creatorHubWalletAddress,
       data: feeData, // fee amount will be deducted from the input amount
     } satisfies Intent;
-
     calls.push(Erc20Service.encodeApprove(intent.inputToken, intentsContract, createIntentParams.inputAmount));
     calls.push(EvmSolverService.encodeCreateIntent(intent, intentsContract));
     return [encodeContractCalls(calls), intent, feeAmount];

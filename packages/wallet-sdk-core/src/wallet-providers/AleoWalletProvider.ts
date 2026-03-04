@@ -1,4 +1,3 @@
-
 import {
   Account,
   AleoNetworkClient,
@@ -14,7 +13,9 @@ import type {
   AleoExecutionResult,
   AleoTransactionReceipt,
   AleoWaitForReceiptOptions,
+  Hex,
 } from '@sodax/types';
+import { Address as AleoAddress } from '@provablehq/sdk';
 
 import type {
   Account as ProvableAccount,
@@ -266,5 +267,18 @@ export class AleoWalletProvider implements IAleoWalletProvider {
 
       throw error;
     }
+  }
+  encodeAleoAddress(address: string): Hex {
+    const addressData = AleoAddress.from_string(address);
+
+    // Get raw bytes (32 bytes = 256 bits, but Aleo uses 253 bits internally)
+    const addressBytes: number[] = Array.from(addressData.toBytesLe());
+
+    //convert back to bigEndian bytes format
+    const bigEndianBytes = addressBytes.reverse();
+    console.log('Addresss in bigEndian bytes is', bigEndianBytes);
+
+    const addressInHex = Buffer.from(bigEndianBytes).toString('hex');
+    return `0x${addressInHex}`;
   }
 }

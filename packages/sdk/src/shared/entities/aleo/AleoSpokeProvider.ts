@@ -101,7 +101,7 @@ export class AleoBaseSpokeProvider {
     for (let i = 0; i < maxRetries; i++) {
       // Allocate a 16-byte (128-bit) buffer and fill it with cryptographically
       // secure random values — much stronger than Math.random()
-      const bytes = new Uint8Array(16);
+      const bytes = new Uint8Array(8);
       crypto.getRandomValues(bytes);
 
       // Interpret the 16 bytes as a single 128-bit unsigned integer.
@@ -112,7 +112,7 @@ export class AleoBaseSpokeProvider {
 
       // Verify this connSn hasn't already been used in the on-chain messages mapping
       const used = await this.isConnSnUsed(connSn);
-      if (!used) return connSn;
+      if (!used) return BigInt(connSn);
     }
     throw new Error('Failed to generate unique connSn after maximum retries');
   }

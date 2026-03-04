@@ -9,6 +9,7 @@ import { bcs } from '@mysten/sui/bcs';
 import { PublicKey } from '@solana/web3.js';
 import { Address as StellarAddress } from '@stellar/stellar-sdk';
 import { EvmWalletAbstraction } from '../services/index.js';
+import { Address as AleoAddress } from '@provablehq/sdk';
 
 export async function retry<T>(
   action: (retryCount: number) => Promise<T>,
@@ -148,13 +149,26 @@ export function encodeAddress(spokeChainId: SpokeChainId, address: string): Hex 
       return `0x${StellarAddress.fromString(address).toScVal().toXDR('hex')}`;
 
     case 'aleo':
-      return toHex(Buffer.from(address, 'utf-8'));
+      //   return toHex(Buffer.from(address, 'utf-8'));
+      return encodeAleoAddress(address);
 
     default:
       return address as Hex;
   }
 }
+function encodeAleoAddress(address: string): Hex {
+  const addressData = AleoAddress.from_string(address);
 
+  // Get raw bytes (32 bytes = 256 bits, but Aleo uses 253 bits internally)
+  const addressBytes: number[] = Array.from(addressData.toBytesLe());
+
+  //convert back to bigEndian bytes format
+  const bigEndianBytes = addressBytes.reverse();
+  console.log('Addresss in bigEndian bytes is', bigEndianBytes);
+
+  const addressInHex = Buffer.from(bigEndianBytes).toString('hex');
+  return `0x${addressInHex}`;
+}
 /**
  * Convert a valid hexadecimal string (with or without "0x") to BigInt.
  * Throws on invalid hex.

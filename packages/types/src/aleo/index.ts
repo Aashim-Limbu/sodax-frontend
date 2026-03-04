@@ -1,4 +1,4 @@
-import type { WalletAddressProvider } from '../common/index.js';
+import type { Hex, WalletAddressProvider } from '../common/index.js';
 
 export type AleoEoaAddress = `aleo1${string}`;
 export type AleoTransactionId = `at1${string}`;
@@ -63,16 +63,16 @@ export type AleoRawTransaction = {
   data: AleoExecuteOptions;
 };
 
-
 export interface IAleoWalletProvider extends WalletAddressProvider {
   getWalletAddress: () => Promise<string>;
   execute: (options: AleoExecuteOptions) => Promise<AleoExecutionResult>;
   waitForTransactionReceipt: (
     transactionId: string,
-    options?: AleoWaitForReceiptOptions
+    options?: AleoWaitForReceiptOptions,
   ) => Promise<AleoTransactionReceipt>;
   executeAndWait: (
     options: AleoExecuteOptions,
-    receiptOptions?: AleoWaitForReceiptOptions
+    receiptOptions?: AleoWaitForReceiptOptions,
   ) => Promise<{ result: AleoExecutionResult; receipt: AleoTransactionReceipt }>;
+  encodeAleoAddress: (address: string) => Hex;
 }
